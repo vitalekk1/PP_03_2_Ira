@@ -23,19 +23,19 @@ namespace PP_03_2
             listNumber = new List<int>();
             devideCountN(2, n, countThread);
             int endT = 2 + h;
-            Thread[] threads = new Thread[countThread];
+            List<Thread> threads = new List<Thread>();
             int countTh = 0;
 
-            for (int i = 2; i < n; i += h)
+            for (int i = 2; i < n; i = i + h)
             {
-                startAndEnd struct3 = new startAndEnd();
-                lock (listNumber)
+                startAndEnd struct3 = new startAndEnd();    
+                endT = i + h;
+                if (endT > n) { endT = n; }
+                struct3.start = i;
+                struct3.end = endT;
+                lock ((object)listNumber)
                 {
-                    endT = i + h;
-                    if (endT > n) { endT = n; }
-                    struct3.start = i;
-                    struct3.end = endT;
-                    threads[countTh] = new Thread(check);
+                    threads.Add(new Thread(check));
                     threads[countTh].Start(struct3);
                     countTh++;
                 }
@@ -63,7 +63,7 @@ namespace PP_03_2
             int start = struct1.start;
             int end = struct1.end;
             int num; int temp;
-            for (int i = start; i <= end; ++i)
+            for (int i = start; i <= end; i++)
             {
                 temp = i; num = 0;
                 while (temp != 0)
@@ -71,7 +71,12 @@ namespace PP_03_2
                     num = num * 10 + (temp % 10);
                     temp /= 10;
                 }
-                if (num == i) listNumber.Add(i);
+                try
+                {
+                    if (num == i) listNumber.Add(i);
+                }
+                catch (Exception ex) { }
+                
             }
         }
 
