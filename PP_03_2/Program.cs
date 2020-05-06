@@ -9,63 +9,39 @@ namespace PP_03_2
 {
     class Program
     {
-        struct startAndEnd{
-            public int start;
-            public int end;
-        }
-        static List<int> listNumber;
-        private static int countThread = 3;
-        private static int h;
+        static List<int> listSimpleNumber;
+        static List<int> listPolindromNumber;
+        static bool isBreak = false;
+        static int n;
         static void Main(string[] args)
         {
             Console.WriteLine("Введите N:");
-            int n = Convert.ToInt32(Console.ReadLine());
-            listNumber = new List<int>();
-            devideCountN(2, n, countThread);
-            int endT = 2 + h;
-            List<Thread> threads = new List<Thread>();
-            int countTh = 0;
+            n = Convert.ToInt32(Console.ReadLine());
+            listSimpleNumber = new List<int>();
+            listPolindromNumber = new List<int>();
 
-            for (int i = 2; i < n; i = i + h)
+            lock ((object)listSimpleNumber)
             {
-                startAndEnd struct3 = new startAndEnd();    
-                endT = i + h;
-                if (endT > n) { endT = n; }
-                struct3.start = i;
-                struct3.end = endT;
-                lock ((object)listNumber)
-                {
-                    threads.Add(new Thread(check));
-                    threads[countTh].Start(struct3);
-                    countTh++;
-                }
-            }
+                Thread thCheckSimpleNumber = new Thread(IsPrimeNumber);
+                Thread thCheckPolindromNumber = new Thread(checkPolindrom);
 
-            foreach(Thread thread in threads)
-            {
-                thread.Join();
-            }
+                thCheckSimpleNumber.Start();
+                thCheckPolindromNumber.Start();
 
-            listNumber = listNumber.Distinct().ToList();
-
-            foreach (int i in listNumber)
-            {
-                Console.WriteLine(i);
+                thCheckSimpleNumber.Join();
+                thCheckPolindromNumber.Join();
             }
 
             Console.ReadKey();
 
         }
 
-        private static void check(object struc)
+        private static void checkPolindrom()
         {
-            startAndEnd struct1 = (startAndEnd)struc;
-            int start = struct1.start;
-            int end = struct1.end;
-            int num; int temp;
-            for (int i = start; i <= end; i++)
+            int num; int temp; int template;
+            while (!isBreak || (listSimpleNumber.Count > 0))
             {
-                temp = i; num = 0;
+                template = temp = listSimpleNumber.First(); num = 0;
                 while (temp != 0)
                 {
                     num = num * 10 + (temp % 10);
@@ -73,18 +49,42 @@ namespace PP_03_2
                 }
                 try
                 {
-                    if (num == i) listNumber.Add(i);
+                    if (num == template)
+                    {
+                        listPolindromNumber.Add(template);
+                    }
+                    listSimpleNumber.RemoveAt(0);
                 }
                 catch (Exception ex) { }
-                
+            }
+
+            foreach (int i in listPolindromNumber)
+            {
+                Console.WriteLine(i);
             }
         }
 
-        private static void devideCountN(double start, double end, int countN)
+        private static void IsPrimeNumber()
         {
-            h =(int) Math.Round((end - start) / countN);
+            bool check = true;
+            for (int i = 2; i <= n; i++)
+            {
+                check = true;
+                int sqrtNumber = (int)(Math.Sqrt(i));
+                for (int j = 2; j <= sqrtNumber; j++)
+                {
+                    if (i % j == 0)
+                    {
+                        check = false;
+                        break;
+                    }
+                }
+                if (check)
+                {
+                    listSimpleNumber.Add(i);
+                }
+            }
+            isBreak = true;
         }
-
-
     }
 }
